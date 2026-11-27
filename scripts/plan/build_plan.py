@@ -2,6 +2,7 @@
 """信息学学习规划（重排版）：现状 → 三型诊断 → 3月目标 → 方案 → GESP之后"""
 
 from docx import Document
+import sys
 from docx.shared import Cm, Pt, RGBColor
 from docx.enum.table import WD_ALIGN_VERTICAL
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -21,7 +22,12 @@ _ap.add_argument("--grade", default="初二", help="年级：初一 / 初二 / �
 _ap.add_argument("--date", default="", help="编制日期，默认今天")
 _ap.add_argument("--out", default=os.getcwd(), help="输出目录，默认当前目录")
 _ap.add_argument("--exam-year", default="", help="中考年份，默认按年级推算（大庆初中四年制）")
+_ap.add_argument("--passcode", default="", help="访问口令")
 _args = _ap.parse_args()
+sys.path.insert(0, os.path.join(os.path.dirname(HERE), "common"))
+import guard as _guard
+_guard.require(_args.passcode)
+
 
 NAME = _args.name
 GRADE = _args.grade
