@@ -13,6 +13,7 @@ problems.json：
    "time_limit":1.5}
 """
 import argparse
+import sys
 import json
 import os
 import shutil
@@ -106,7 +107,12 @@ def main():
     ap.add_argument("--gxx", default="g++", help="g++ 路径")
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--ids", nargs="*", default=None, help="只跑这些考号")
+    ap.add_argument("--passcode", default="", help="访问口令")
     args = ap.parse_args()
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "common"))
+    import guard
+    guard.require(args.passcode)
+
 
     conf = json.load(open(args.problems, encoding="utf-8"))
     probs = conf["problems"]
