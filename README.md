@@ -30,16 +30,27 @@ git clone https://github.com/Srcus/oi-report ~/.dsh/skills/oi-report
 
 ## 快速开始
 
-### CSP
+### CSP（一条命令）
+
+```bash
+python scripts/csp/report.py --ids HL-J00889 --archive ./answers --data ./data \
+  --problems examples/csp/csp2026.json --out ./out --passcode <口令>
+```
+
+产出：封面 logo + 能力画像 + 弱项与补强 + 逐题分析。默认 auto，`--mode spec` 读 agent 精修版。
+
+<details><summary>只用判题 / 只用渲染</summary>
 
 ```bash
 # 1. 本地判题（可选）
 python scripts/csp/judge.py --submissions ./answers --data ./data \
   --problems examples/csp/problems.json --out result.json
 
-# 2. 渲染（每人一份 spec JSON，格式见 examples/csp/spec_zhangsan.json）
+# 2. 渲染（每人一份 spec JSON）
 python scripts/csp/render.py --specs ./specs --archive ./answers --out ./out
 ```
+
+</details>
 
 ### AtCoder
 
