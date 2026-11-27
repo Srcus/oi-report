@@ -116,6 +116,20 @@ python scripts/atcoder/render_report.py --data data/alice.json --cache ./cache -
 
 ## 三、学习规划书
 
+### 1. 先做知识点盘点（CSP-J 范围）
+
+让学生档案按 `references/knowledge-points.md` 填掌握度（0–4 分），再跑分析：
+
+```bash
+python scripts/plan/analyze.py --profile 张三.json --goal two
+```
+
+- `--goal two|three|four`：目标前几题（default two，即 200/400）
+- 输出：每题准备度与预估分、优先补的知识点、按周课时估算的所需周数
+- 清单是 CSP-J 第二轮的范围，31 个知识点，分 L1–L4 四级
+
+### 2. 生成规划书
+
 ```bash
 python scripts/plan/build_plan.py --name 张三 --grade 初二 --out ./out
 ```
