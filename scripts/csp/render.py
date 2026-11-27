@@ -7,6 +7,7 @@
   code   —— 没有任何成绩，纯代码分析
 """
 import json
+import sys
 import os
 
 from docx import Document
@@ -255,7 +256,12 @@ def main():
     ap.add_argument("--specs", required=True, help="spec JSON 目录")
     ap.add_argument("--archive", default="", help="代码目录 <考号>/<slug>/<slug>.cpp")
     ap.add_argument("--out", default="out", help="输出目录")
+    ap.add_argument("--passcode", default="", help="访问口令")
     args = ap.parse_args()
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "common"))
+    import guard
+    guard.require(args.passcode)
+
     global ARCHIVE, OUT
     if args.archive:
         ARCHIVE = args.archive
