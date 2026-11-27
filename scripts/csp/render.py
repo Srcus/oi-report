@@ -22,6 +22,12 @@ ROOT = os.path.dirname(os.path.dirname(HERE))
 ARCHIVE = os.path.join(ROOT, "luogu-submit", "input", "answers")
 SPEC_DIR = os.path.join(HERE, "specs")
 OUT = os.path.join(HERE, "out")
+LOGO = ""
+
+
+def bar(score, full=5):
+    score = max(0, min(full, int(score)))
+    return "█" * score + "░" * (full - score) + f"  {score}"
 os.makedirs(OUT, exist_ok=True)
 os.makedirs(SPEC_DIR, exist_ok=True)
 
@@ -166,7 +172,13 @@ def build(spec):
     normal._element.rPr.rFonts.set(qn("w:eastAsia"), CN_FONT)
 
     # 封面
-    for _ in range(3):
+    for _ in range(2):
+        doc.add_paragraph()
+    logo = spec.get("logo") or LOGO
+    if logo and os.path.exists(logo):
+        lp = doc.add_paragraph()
+        lp.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        lp.add_run().add_picture(logo, width=Cm(2.4))
         doc.add_paragraph()
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -215,8 +227,27 @@ def build(spec):
     set_cn(r)
     doc.add_page_break()
 
+    # 能力画像（可选）
+    has_profile = bool(spec.get("profile"))
+    sec = 1
+    if has_profile:
+        prof = spec["profile"]
+        h(doc, "一、能力画像")
+        if prof.get("summary"):
+            para(doc, prof["summary"])
+        rows = [[d["name"], bar(d["score"]), d.get("evidence", "")] for d in prof["dimensions"]]
+        add_table(doc, ["能力维度", "评分", "依据"], rows, [3.2, 3.0, 10.4])
+        if prof.get("total_line"):
+            para(doc, prof["total_line"], gray=True)
+        h(doc, "二、弱项与补强")
+        for w in prof.get("weak", []):
+            para(doc, f"{w['name']}（{w['score']} 分）", bold=True)
+            para(doc, w["why"])
+            para(doc, w["fix"])
+        sec = 3
+
     # 概览
-    h(doc, "一、代码概览" if mode == "code" else "一、成绩概览")
+    h(doc, f"{CN_NUM[sec-1]}、代码概览" if mode == "code" else f"{CN_NUM[sec-1]}、成绩概览")
     para(doc, spec["lead"])
     rows = []
     if mode == "detail":
@@ -232,7 +263,7 @@ def build(spec):
 
     # 各题
     for idx, pr in enumerate(spec["problems"]):
-        title = f"{CN_NUM[idx + 1]}、{pr['no']}　{pr['title']}"
+        title = f"{CN_NUM[idx + sec]}、{pr['no']}　{pr['title']}"
         if mode == "detail":
             title += f"（{pr.get('score')} / 100）"
         h(doc, title)
@@ -240,11 +271,12 @@ def build(spec):
             render_block(doc, b, spec["adm"], pr["slug"])
 
     # 总结
-    h(doc, f"{CN_NUM[len(spec['problems']) + 1]}、总结与训练建议")
+    h(doc, f"{CN_NUM[len(spec['problems']) + sec]}、总结与训练建议")
     for b in spec["summary"]:
         render_block(doc, b, spec["adm"], "")
 
-    name = f"{spec['name']}_{spec['adm']}_{spec.get('file_tag', 'CSP-J2026')}_代码诊断报告.docx"
+    prefix = f"{spec['name']}_" if spec.get('name') and spec['name'] != spec['adm'] else ""
+    name = f"{prefix}{spec['adm']}_{spec.get('file_tag', 'CSP-J2026')}_代码诊断报告.docx"
     path = os.path.join(OUT, name)
     doc.save(path)
     return path
@@ -256,15 +288,18 @@ def main():
     ap.add_argument("--specs", required=True, help="spec JSON 目录")
     ap.add_argument("--archive", default="", help="代码目录 <考号>/<slug>/<slug>.cpp")
     ap.add_argument("--out", default="out", help="输出目录")
+    ap.add_argument("--logo", default="", help="封面 logo 图片路径")
     ap.add_argument("--passcode", default="", help="访问口令")
     args = ap.parse_args()
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "common"))
     import guard
     guard.require(args.passcode)
 
-    global ARCHIVE, OUT
+    global ARCHIVE, OUT, LOGO
     if args.archive:
         ARCHIVE = args.archive
+    if args.logo:
+        LOGO = args.logo
     OUT = args.out
     os.makedirs(OUT, exist_ok=True)
     files = sorted(f for f in os.listdir(args.specs) if f.endswith(".json"))
