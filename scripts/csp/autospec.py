@@ -103,7 +103,7 @@ def build_spec(sid, name, results, scan, meta, profile, official=None, org="指�
         "scores": scores if has_scores else {}, "total": (official.get("total") if has_scores else None),
         "contest_label": contest, "org_line": org, "file_tag": "CSP-J2026",
         "profile": profile,
-        "lead": f"本地评测总分 {local_total}。" + profile["summary"],
+        "lead": f"先看能力画像和弱项，后面是逐题分析。本地评测总分 {local_total}。",
         "problems": problems,
         "summary": summary,
     }
