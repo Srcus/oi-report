@@ -104,7 +104,12 @@ def main():
     ap.add_argument("--data", nargs="+", required=True, help="分析数据 JSON（可多个）")
     ap.add_argument("--cache", default="cache", help="源码缓存目录")
     ap.add_argument("--out", default="out", help="输出目录")
+    ap.add_argument("--passcode", default="", help="访问口令")
     args = ap.parse_args()
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "common"))
+    import guard
+    guard.require(args.passcode)
+
     os.makedirs(args.out, exist_ok=True)
     for f in args.data:
         data = json.load(open(f, encoding="utf-8"))
