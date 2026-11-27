@@ -122,7 +122,12 @@ def main():
     ap.add_argument("--contest", required=True, help="比赛 id，如 abc484")
     ap.add_argument("--users", nargs="+", required=True, help="选手 handle，空格分隔")
     ap.add_argument("--out", default="cache", help="缓存目录（默认 ./cache）")
+    ap.add_argument("--passcode", default="", help="访问口令")
     args = ap.parse_args()
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "common"))
+    import guard
+    guard.require(args.passcode)
+
 
     start, title = contest_start(args.contest)
     os.makedirs(args.out, exist_ok=True)
