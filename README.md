@@ -16,7 +16,15 @@
 pip install python-docx openpyxl
 ```
 
-作为 DSH 技能使用：把整个目录放到 `~/.dsh/skills/oi-report/`，之后直接说
+### 安装到 DSH
+
+```bash
+git clone https://github.com/Srcus/oi-report ~/.dsh/skills/oi-report
+```
+
+没有 git 的机器：下载 [Release](https://github.com/Srcus/oi-report/releases) 里的 zip，解压到 `~/.dsh/skills/oi-report/`。
+
+装好之后直接说
 
 > 给这几个人出一下 abc484 的报告
 
