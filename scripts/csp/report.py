@@ -95,7 +95,7 @@ def main():
               ensure_ascii=False, indent=1)
 
     scans = scanner.scan_all(args.archive, args.ids, slugs)
-    logo = args.logo or os.path.join(os.path.dirname(os.path.dirname(HERE)), "assets", "logo.jpg")
+    logo = args.logo or os.path.join(os.path.dirname(os.path.dirname(HERE)), "assets", "logo.png")
     render.LOGO = logo if os.path.exists(logo) else ""
     render.OUT = args.out
 
