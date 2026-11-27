@@ -1,0 +1,10 @@
+{
+ "problems": [
+  {
+   "slug": "travel",
+   "pid": "P10000",
+   "points": 5
+  }
+ ],
+ "time_limit": 1.5
+}
