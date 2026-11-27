@@ -28,38 +28,60 @@ whenToUse: 用户提出生成/批量生成学员代码诊断报告、比赛成�
 
 ## 一、CSP 代码诊断
 
-适用：有一批选手的代码（每人一题一个 `.cpp`），可能还有真实成绩。
-
-### 1. 本地判题（可选，但有成绩时必须做）
+**给准考证号就能出报告**：判题 → 代码体检 → 能力评估 → 渲染，一条命令。
 
 ```bash
-python scripts/csp/judge.py \
-  --submissions ./answers --data ./data \
-  --problems examples/csp/problems.json --out result.json
+python scripts/csp/report.py \
+  --ids HL-J00889 HL-J00781 \
+  --archive ./answers \
+  --data ./data \
+  --problems examples/csp/csp2026.json \
+  --names names.json \
+  --out ./out \
+  --passcode pointer
 ```
 
 - 目录约定：`answers/<考号>/<slug>/<slug>.cpp`，`data/<pid>/1.in|1.ans`
-- `problems.json`：`{"problems":[{"slug":"travel","pid":"P17827","points":5}],"time_limit":1.5}`
-- 输出每个考号每题得分、TLE/RE/CE 明细
+- `--names`：`{"HL-J00889": "李东洲"}`；`--scores` 可给成绩表 xlsx（含准考证号/姓名/分题列）
+- 产出每人一份 docx：**封面带 logo → 一、能力画像 → 二、弱项与补强 → 三、成绩概览 → 逐题 → 总结**
 
-### 2. 写 spec
+### 报告最前面的能力画像
 
-每人一份 JSON，格式见 `examples/csp/specs/spec_zhangsan.json`。核心字段：
+六个维度，每项 5 分起步，按判题和代码体检的证据扣分：
+
+| 维度 | 看什么 |
+|---|---|
+| 读题与细节 | freopen 文件名、输入顺序、输出格式 |
+| 代码实现 | 编译失败、运行错误、数组越界 |
+| 复杂度意识 | 超时点占比 |
+| 知识点 | 题目标签里没拿到的部分 |
+| 分析与建模 | 有代码但 0 分的题数 |
+| 应试策略 | 缺交、写死输出、空文件 |
+
+后面跟「弱项与补强」，只写最差的两项：现象 → 原因 → 这周怎么练。
+
+### auto 与 spec
+
+默认 `auto`：全部文字由规则生成，输出最后会提示：
+
+> 本次使用 auto 模式（规则生成）。如需更细的逐段分析，把修改后的 spec 放到 `<out>/specs/<考号>.json`，再加 `--mode spec` 重跑。
+
+`spec` 模式读取 `<out>/specs/<考号>.json`（格式见 `examples/csp/specs/spec_zhangsan.json`），没有则回退 auto。spec 的字段：
 
 | 字段 | 说明 |
 |---|---|
-| `mode` | `detail`（有分题成绩）/ `total`（只有总分）/ `code`（无成绩，纯代码分析） |
-| `scores` / `total` | 分题成绩、总分（`detail` 模式用） |
+| `mode` | `detail`（有分题成绩）/ `total`（只有总分）/ `code`（无成绩） |
+| `scores` / `total` | 分题成绩、总分 |
 | `problems[]` | `no` `title` `pid` `slug` `score` `brief` `blocks[]` |
 | `blocks[]` | `h2` / `p` / `code` / `table` / `bullets` |
-| `summary[]` | 同样的 block 结构 |
 
-`code` 块从 `--archive/<考号>/<slug>/<slug>.cpp` 取代码。
-
-### 3. 渲染
+### 只用判题或只用渲染
 
 ```bash
-python scripts/csp/render.py --specs ./specs --archive ./answers --out ./out
+python scripts/csp/judge.py --submissions ./answers --data ./data \
+  --problems examples/csp/csp2026.json --out result.json
+
+python scripts/csp/render.py --specs ./specs --archive ./answers --out ./out --logo assets/logo.jpg
 ```
 
 ---
