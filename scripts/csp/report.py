@@ -64,7 +64,8 @@ def main():
     ap.add_argument("--scores", default="", help="可选：成绩表 xlsx（含 准考证号/姓名/分题列）")
     ap.add_argument("--names", default="", help="可选：{考号: 姓名} JSON")
     ap.add_argument("--out", default="out")
-    ap.add_argument("--mode", choices=["auto", "spec"], default="auto")
+    ap.add_argument("--mode", choices=["auto", "spec"], default="spec",
+                    help="spec=精修版（默认，读 <out>/specs/<id>.json）；auto=规则快速版")
     ap.add_argument("--logo", default="", help="封面 logo；默认 assets/logo.jpg")
     ap.add_argument("--gxx", default="g++")
     ap.add_argument("--time-limit", type=float, default=1.5)
@@ -86,6 +87,8 @@ def main():
         official.update(load_scores(args.scores, slugs))
 
     print(f"处理 {len(args.ids)} 人，{len(probs)} 道题")
+    if args.mode == "spec" and len(args.ids) > 8:
+        print("提示：人数较多，可加 --mode auto 先用规则版快速出稿，再挑重点精修。")
     by = run_judge(args.ids, args, probs) if args.data else load_offline(args.ids, args, probs)
     json.dump([r for d in by.values() for r in d.values()],
               open(os.path.join(args.out, "judge_result.json"), "w", encoding="utf-8"),
@@ -110,13 +113,13 @@ def main():
                 spec = json.load(open(p, encoding="utf-8"))
                 print(f"  {sid}: 使用 spec 版 {p}")
             else:
-                print(f"  {sid}: 没有找到 {p}，回退 auto")
+                print(f"  {sid}: 没有找到 {p}，回退 auto（批量时可显式 --mode auto）")
 
         render.ARCHIVE = args.archive
         print("  " + render.build(spec))
 
-    auto_hint = ("本次使用 auto 模式（规则生成）。如需更细的逐段分析，"
-                 "把修改后的 spec 放到 <out>/specs/<考号>.json，再加 --mode spec 重跑。")
+    auto_hint = ("本次为 spec 模式：找到的 spec 直接使用，没找到的回退 auto。"
+                 "如需批量快速出稿，加 --mode auto。")
     print(auto_hint)
 
 
