@@ -30,10 +30,14 @@ def norm(s):
 
 def compile_one(gxx, src, exe, timeout=60):
     msg = ""
+    env = dict(os.environ)
+    tmp = os.path.join(os.path.dirname(exe), "tmp")
+    os.makedirs(tmp, exist_ok=True)
+    env["TMP"] = env["TEMP"] = env["TMPDIR"] = tmp
     for std in ("c++14", "c++17"):
         try:
             p = subprocess.run([gxx, f"-std={std}", "-O2", "-pipe", "-o", exe, src],
-                               capture_output=True, timeout=timeout)
+                               capture_output=True, timeout=timeout, env=env)
         except subprocess.TimeoutExpired:
             return False, "编译超时"
         if p.returncode == 0:
