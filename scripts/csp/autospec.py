@@ -14,9 +14,10 @@ def _fail_desc(tests):
     return "，".join(parts)
 
 
-def build_spec(sid, name, results, scan, meta, profile, official=None, org="指针教育", contest="CSP-J 2026 复赛"):
+def build_spec(sid, name, results, scan, meta, profile, official=None, org="指针科技", contest="CSP-J 2026 复赛"):
     local_total = sum(r.get("score", 0) for r in results.values())
-    mode = "detail" if official else "code"
+    has_scores = bool(official) and any((official.get("scores") or {}).values())
+    mode = "detail" if has_scores else "code"
     scores = official or {}
 
     problems = []
@@ -99,7 +100,7 @@ def build_spec(sid, name, results, scan, meta, profile, official=None, org="指�
 
     return {
         "name": name, "adm": sid, "mode": mode,
-        "scores": scores, "total": official.get("total") if isinstance(official, dict) else None,
+        "scores": scores if has_scores else {}, "total": (official.get("total") if has_scores else None),
         "contest_label": contest, "org_line": org, "file_tag": "CSP-J2026",
         "profile": profile,
         "lead": f"本地评测总分 {local_total}。" + profile["summary"],
