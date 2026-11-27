@@ -1,0 +1,9 @@
+out/
+cache/
+data/
+_work/
+__pycache__/
+*.pyc
+*.docx
+*.pdf
+.DS_Store
