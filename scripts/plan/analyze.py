@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
-"""按学生档案里的知识点掌握度做差距分析。
+"""按学生档案里的知识点掌握度做差距分析（CSP-J 第二轮范围，不含时间安排）。
 
 用法：
   python analyze.py --profile 学生.json [--goal two|three|four] [--out analysis.json]
 
 学生档案（JSON）：
   {
-    "name": "张三", "grade": "初二", "weekly_hours": 4,
+    "name": "张三", "grade": "初二",
     "awards": [{"name": "CSP-J 2026 第一轮", "level": "二等"}],
-    "mastery": {"L1-01": 3, "L1-05": 2, ...}
+    "mastery": {"L1-01": 3, "L1-05": 2, ...},
+    "notes": "做题慢，遇到长题面容易跳过"
   }
 
 掌握度：0 不会 / 1 听过 / 2 会套模板 / 3 能独立写 / 4 能变形。
@@ -21,6 +22,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 KNOW = json.load(open(os.path.join(HERE, "knowledge.json"), encoding="utf-8"))
 ITEMS = {x["id"]: x for x in KNOW["items"]}
 TARGET = KNOW.get("target_level", 3)
+STAGES = KNOW.get("stages", {})
 GOALS = {"two": ["problem1", "problem2"],
          "three": ["problem1", "problem2", "problem3"],
          "four": ["problem1", "problem2", "problem3", "problem4"]}
@@ -28,7 +30,6 @@ GOALS = {"two": ["problem1", "problem2"],
 
 def analyze(profile, goal="two"):
     mastery = profile.get("mastery", {})
-    hours = float(profile.get("weekly_hours") or 4)
     keys = GOALS.get(goal, GOALS["two"])
     required = []
     for k in keys:
@@ -40,13 +41,10 @@ def analyze(profile, goal="two"):
     for i in required:
         item = ITEMS[i]
         cur = int(mastery.get(i, 0) or 0)
-        need = max(0, TARGET - cur)
-        if need:
-            gaps.append({"id": i, "module": item["module"], "name": item["name"],
-                         "current": cur, "need": need, "hours": item["hours"] * need / 2.0})
-
-    total_hours = sum(g["hours"] for g in gaps)
-    weeks = round(total_hours / hours, 1) if hours else 0
+        if cur < TARGET:
+            gaps.append({"id": i, "module": item["module"], "stage": item["stage"],
+                         "name": item["name"], "current": cur})
+    gaps.sort(key=lambda g: (g["stage"], g["current"], g["id"]))
 
     problems = []
     for key, p in KNOW["exam"].items():
@@ -55,14 +53,18 @@ def analyze(profile, goal="two"):
         problems.append({"key": key, "name": p["name"], "ready": round(ratio * 100),
                          "points": round(p["points"] * ratio)})
 
-    order = {"L1": 0, "L2": 1, "L3": 2, "L4": 3}
-    gaps.sort(key=lambda g: (order.get(g["module"], 9), g["current"], g["hours"]))
+    stages = []
+    for s in sorted(STAGES):
+        items = [x["id"] for x in KNOW["items"] if str(x["stage"]) == s]
+        vals = [min(int(mastery.get(i, 0) or 0), TARGET) for i in items]
+        ratio = (sum(vals) / (len(vals) * TARGET)) if vals else 0
+        stages.append({"stage": int(s), "name": STAGES[s]["name"], "goal": STAGES[s]["goal"],
+                       "ready": round(ratio * 100),
+                       "missing": [i for i in items if int(mastery.get(i, 0) or 0) < TARGET]})
 
     return {
         "name": profile.get("name", ""), "grade": profile.get("grade", ""),
-        "weekly_hours": hours, "goal": goal,
-        "gaps": gaps, "total_hours": round(total_hours, 1), "weeks_needed": weeks,
-        "problems": problems,
+        "goal": goal, "gaps": gaps, "problems": problems, "stages": stages,
         "goal_points": sum(p["points"] for p in problems[:len(keys)]),
         "goal_full": 100 * len(keys),
         "awards": profile.get("awards", []), "notes": profile.get("notes", ""),
@@ -71,23 +73,23 @@ def analyze(profile, goal="two"):
 
 def summary_text(a):
     lines = [f"{a['name']}（{a['grade']}）知识点盘点", ""]
-    lines.append(f"目标：前{'两' if a['goal']=='two' else '三' if a['goal']=='three' else '四'}题。"
-                 f"按每周 {a['weekly_hours']:g} 小时算，补齐到能独立写约需 {a['weeks_needed']:g} 周"
-                 f"（{a['total_hours']:g} 课时）。")
-    lines.append("")
-    lines.append("分题预估：")
+    lines.append("分题准备度：")
     for p in a["problems"]:
-        lines.append(f"  {p['name']}：准备度 {p['ready']}%，约 {p['points']} 分")
+        lines.append(f"  {p['name']}：{p['ready']}%，约 {p['points']} 分")
     lines.append(f"  目标合计约 {a['goal_points']} / {a['goal_full']}")
     lines.append("")
-    lines.append("优先补的知识点：")
+    lines.append("四个阶段：")
+    for s in a["stages"]:
+        lines.append(f"  {s['name']}：{s['ready']}%　缺 {len(s['missing'])} 个点")
+    lines.append("")
+    lines.append("当前该补的知识点（按阶段顺序）：")
     for g in a["gaps"][:10]:
-        lines.append(f"  {g['id']} {g['name']}（当前 {g['current']}/4，约 {g['hours']:.0f} 课时）")
+        lines.append(f"  阶段{g['stage']}　{g['id']} {g['name']}（当前 {g['current']}/4）")
     return "\n".join(lines)
 
 
 def main():
-    ap = argparse.ArgumentParser(description="知识点差距分析")
+    ap = argparse.ArgumentParser(description="知识点差距分析（CSP-J）")
     ap.add_argument("--profile", required=True)
     ap.add_argument("--goal", choices=["two", "three", "four"], default="two")
     ap.add_argument("--out", default="")
