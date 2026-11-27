@@ -178,7 +178,7 @@ def build(spec):
     if logo and os.path.exists(logo):
         lp = doc.add_paragraph()
         lp.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        lp.add_run().add_picture(logo, width=Cm(2.4))
+        lp.add_run().add_picture(logo, width=Cm(7.5))
         doc.add_paragraph()
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -207,8 +207,12 @@ def build(spec):
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     if mode == "detail":
-        line = (f"真实成绩　T1 {s.get('travel')}　T2 {s.get('string')}　T3 {s.get('and')}"
-                f"　T4 {s.get('card')}　总分 {spec.get('total')} / 400")
+        vals = [s.get(k) for k in ("travel", "string", "and", "card")]
+        if all(v not in (None, "") for v in vals):
+            line = (f"真实成绩　T1 {vals[0]}　T2 {vals[1]}　T3 {vals[2]}"
+                    f"　T4 {vals[3]}　总分 {spec.get('total')} / 400")
+        else:
+            line = "代码分析"
     elif mode == "total":
         line = f"复赛总分　{spec.get('total')} / 400"
     else:
