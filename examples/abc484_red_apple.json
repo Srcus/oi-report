@@ -1,0 +1,115 @@
+{
+ "user": "red_apple",
+ "language": "C++23",
+ "score": 600,
+ "summary": "A、B、C 一次通过，D 交了 4 次没过；合计 600 分。",
+ "problems": [
+  {
+   "pid": "abc484_a",
+   "letter": "A",
+   "title": "Chocolate Bar Count",
+   "points": 100,
+   "result": "AC",
+   "attempts": 1,
+   "ms": 5,
+   "file": "attempts/abc484_a_01_AC.cpp",
+   "statement": "一块 30 行 30 列的巧克力。先去掉最下面的 B 行（做 B 次），再去掉最右边的 R 列（做 R 次）。问最后还剩多少小块。1 ≤ B, R ≤ 29。",
+   "rows": [
+    [
+     "输入",
+     "B R。"
+    ],
+    [
+     "做法",
+     "(30-B)*(30-R)。"
+    ]
+   ],
+   "verdict": "一次通过，没有多余代码。",
+   "advice": "没有要改的。"
+  },
+  {
+   "pid": "abc484_b",
+   "letter": "B",
+   "title": "Nineball",
+   "points": 200,
+   "result": "AC",
+   "attempts": 1,
+   "ms": 6,
+   "file": "attempts/abc484_b_02_AC.cpp",
+   "statement": "九球游戏，桌上还剩 K 个球，编号是 A_1..A_K。你要打桌上编号最小的球；但如果 9 号球已经不在桌上，说明比赛结束，输出 -1。",
+   "rows": [
+    [
+     "输入",
+     "K 和 K 个编号。"
+    ],
+    [
+     "判断",
+     "记录 9 是否出现；同时求最小值。"
+    ]
+   ],
+   "verdict": "一次通过，判断对象找对了（9 号），边界也对。",
+   "advice": "没有要改的。"
+  },
+  {
+   "pid": "abc484_c",
+   "letter": "C",
+   "title": "Move One Card",
+   "points": 300,
+   "result": "AC",
+   "attempts": 1,
+   "ms": 8,
+   "file": "attempts/abc484_c_03_AC.cpp",
+   "statement": "给定两个长度为 N 的序列 A、B。允许恰好一次操作：从 A 中取出一个元素，插入到剩下序列的任意位置。问能否把 A 变成 B。",
+   "rows": [
+    [
+     "输入",
+     "N 和两个序列。"
+    ],
+    [
+     "做法",
+     "先定位不同的区间，再验证两种平移。"
+    ]
+   ],
+   "verdict": "一次通过。C 的判定方式和标准做法一致。",
+   "advice": "没有要改的。"
+  },
+  {
+   "pid": "abc484_d",
+   "letter": "D",
+   "title": "Move One Card Left",
+   "points": 400,
+   "result": "WA",
+   "attempts": 4,
+   "ms": 9,
+   "file": "attempts/abc484_d_07_WA.cpp",
+   "statement": "给定序列 A。允许恰好一次操作：取出一个元素，插入到它原来的位置或更靠前的位置。问操作后能得到多少种不同的序列（结果相同算一种）。",
+   "rows": [
+    [
+     "输入",
+     "N 和序列 A。"
+    ],
+    [
+     "第一次",
+     "数组开 N=1e5+5，但 n 可到 2×10^5，越界 RE。"
+    ],
+    [
+     "之后",
+     "改成 2e5+5，但公式每项多算 1，还做了累加：diff[i]=diff[prev]+(i-prev)。"
+    ],
+    [
+     "结果",
+     "4 次提交，最后一次仍是 WA。"
+    ]
+   ],
+   "verdict": "D 题最后没过。正确答案是 1 + Σ(i − 上一次出现的位置 − 1)，每个位置单独算；他的 diff[i] 从 i 起步，还把上一项的 diff 累加进来，每项都偏大。反例：A=[1,2,3]，正确 4，程序输出 6；A=[1,1,2]，正确 3，输出 4。",
+   "advice": "先把公式写在纸上，用 [1,2,3] 和 [1,1,2] 手算一遍再写代码；累加式的 diff 只在「前一项真的影响后一项」时成立，这里每项是独立的。"
+  }
+ ],
+ "closing": [
+  "前三题干净通过，说明基础和实现都没问题；D 卡在公式，不是卡在写代码。",
+  "D 这类计数题，建议先用 n≤6 的暴力枚举所有 (i,j) 得到小数据答案，再对照自己的公式，能少走很多弯路。"
+ ],
+ "contest_title": "AtCoder Beginner Contest 484",
+ "full": 1000,
+ "contest": "abc484"
+}
