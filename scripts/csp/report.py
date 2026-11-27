@@ -118,8 +118,12 @@ def main():
         render.ARCHIVE = args.archive
         print("  " + render.build(spec))
 
-    auto_hint = ("本次为 spec 模式：找到的 spec 直接使用，没找到的回退 auto。"
-                 "如需批量快速出稿，加 --mode auto。")
+    if args.mode == "auto":
+        auto_hint = ("本次为 auto 模式（规则生成）。需要逐题细分析时，"
+                     "准备 <out>/specs/<考号>.json 后改用 --mode spec。")
+    else:
+        auto_hint = ("本次为 spec 模式：找到的 spec 直接使用，没找到的回退 auto。"
+                     "如需批量快速出稿，加 --mode auto。")
     print(auto_hint)
 
 
