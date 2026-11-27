@@ -2,7 +2,6 @@
  "name": "张三",
  "grade": "初二",
  "school": "大庆市某某中学",
- "weekly_hours": 4,
  "awards": [
   {
    "name": "CSP-J 2026 第一轮",
